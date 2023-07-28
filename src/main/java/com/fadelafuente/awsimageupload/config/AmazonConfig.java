@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Configuration
 public class AmazonConfig {
@@ -25,11 +26,11 @@ public class AmazonConfig {
         String file = "developer_accessKeys.csv";
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(file));
-            CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT);
-
-            List<CSVRecord> access = csvParser.getRecords();
-            access_key = access.get(0).get("Access key ID");
-            access_secret = access.get(0).get("Secret access key");
+            fileReader.readLine();
+            String row = fileReader.readLine();
+            String[] access = row.split(",");
+            access_key = access[0];
+            access_secret = access[1];
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,6 +42,7 @@ public class AmazonConfig {
 
         return AmazonS3ClientBuilder
                 .standard()
+                .withRegion("us-east-2")
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
     }
