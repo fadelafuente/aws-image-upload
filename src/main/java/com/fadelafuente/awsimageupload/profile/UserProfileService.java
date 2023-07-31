@@ -52,5 +52,15 @@ public class UserProfileService {
         String bucketName = BucketName.PROFILE_IMAGE.getBucketName();
         String filename = userProfileId + "/" + String.format("%s-%s", file.getOriginalFilename(), UUID.randomUUID());
         filestore.save(bucketName, filename, Optional.of(metadata), file.getInputStream());
+        user.setUserProfileImageLink(filename);
+    }
+
+    public byte[] downloadUserProfileImage(UUID userProfileId) {
+        UserProfile user = userProfileDataAccessService.getUserProfile(userProfileId);
+        String bucketName = BucketName.PROFILE_IMAGE.getBucketName();
+
+        return user.getUserProfileImageLink()
+                .map(key -> filestore.download(bucketName, key))
+                .orElse(new byte[0]);
     }
 }
