@@ -3,9 +3,7 @@ package com.fadelafuente.awsimageupload.datastore;
 import com.fadelafuente.awsimageupload.profile.UserProfile;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class FakeUserProfileDataStore {
@@ -18,5 +16,12 @@ public class FakeUserProfileDataStore {
 
     public List<UserProfile> getUserProfiles() {
         return USER_PROFILES;
+    }
+
+    public UserProfile getUserProfile(UUID userProfileId) {
+        return USER_PROFILES.stream()
+                .filter(userProfile -> userProfile.getUserProfileId().equals(userProfileId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("User does not exist"));
     }
 }
