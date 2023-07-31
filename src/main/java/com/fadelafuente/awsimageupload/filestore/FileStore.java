@@ -3,9 +3,13 @@ package com.fadelafuente.awsimageupload.filestore;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
@@ -26,13 +30,23 @@ public class FileStore {
         ObjectMetadata metadata = new ObjectMetadata();
         optionalMetaData.ifPresent(map ->{
             if (!map.isEmpty()) {
-                map.forEach((key, value) -> metadata.addUserMetadata(key, value));
+                map.forEach(metadata::addUserMetadata);
             }
         });
         try {
             s3.putObject(path, fileName, inputStream, metadata);
         } catch (AmazonServiceException e) {
             throw new IllegalStateException("failed to store file to s3", e);
+        }
+    }
+
+    public byte[] download(String bucketName, String key) {
+        try {
+            S3Object s3Object = s3.getObject(bucketName, key);
+            S3ObjectInputStream inputStream = s3Object.getObjectContent();
+            return IOUtils.toByteArray(inputStream);
+        } catch (AmazonServiceException | IOException e) {
+            throw new IllegalStateException("failed to download file from s3", e);
         }
     }
 }
